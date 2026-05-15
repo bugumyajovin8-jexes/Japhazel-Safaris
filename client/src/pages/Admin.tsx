@@ -24,7 +24,7 @@ import { useStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { toursApi, bookingsApi, authApi, galleryApi, contactApi, settingsApi } from "@/lib/api";
+import { toursApi, bookingsApi, galleryApi, contactApi, settingsApi } from "@/lib/api";
 import type { Tour, Booking, GalleryItem, ContactMessage } from "@shared/schema";
 
 export default function Admin() {
