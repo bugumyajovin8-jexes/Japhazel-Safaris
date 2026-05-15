@@ -116,22 +116,26 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-(async () => {
+export const setupPromise = (async () => {
   const port = parseInt(process.env.PORT || "3000", 10);
   
   log(`Checking environment: DATABASE_URL is ${process.env.DATABASE_URL ? "SET" : "NOT SET"}`);
   log(`Checking environment: NODE_ENV is ${process.env.NODE_ENV}`);
   
-  // Start listening immediately to satisfy platform health checks
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-    },
-    () => {
-      log(`Server physical port listener opened on ${port}`);
-    },
-  );
+  if (process.env.VERCEL) {
+    log("Running in Vercel serverless environment. Skipping app.listen().");
+  } else {
+    // Start listening immediately to satisfy platform health checks
+    httpServer.listen(
+      {
+        port,
+        host: "0.0.0.0",
+      },
+      () => {
+        log(`Server physical port listener opened on ${port}`);
+      },
+    );
+  }
 
   // Seed database with default admin user if none exists
   // We already handle resiliency inside storage and seedDatabase
@@ -147,12 +151,9 @@ app.get("/api/health", (req, res) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production" && !process.env.VERCEL) {
     serveStatic(app);
-  } else {
+  } else if (!process.env.VERCEL) {
     try {
       const { setupVite } = await import("./vite");
       await setupVite(httpServer, app);
@@ -162,3 +163,5 @@ app.get("/api/health", (req, res) => {
     }
   }
 })();
+
+export default app;
