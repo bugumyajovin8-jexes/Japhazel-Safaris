@@ -364,7 +364,7 @@ export class ResilientStorage implements IStorage {
 
     let timeoutId: NodeJS.Timeout;
     const timeoutPromise = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error("Database connection timed out")), 10000);
+      timeoutId = setTimeout(() => reject(new Error("Database connection timed out")), 3000); // 3s timeout for Vercel
     });
     
     try {
