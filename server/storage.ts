@@ -358,20 +358,23 @@ export class ResilientStorage implements IStorage {
   }
 
   private async withFallback<T>(fn: (storage: IStorage) => Promise<T>): Promise<T> {
-    if (this.useMemory) {
+    if (this.useMemory && !process.env.DATABASE_URL) {
       return fn(this.memoryStorage);
     }
 
+    let timeoutId: NodeJS.Timeout;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("Database connection timed out")), 10000);
+    });
+    
     try {
-      // Add a timeout to the DB request
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Database connection timed out")), 5000)
-      );
-      
-      return await Promise.race([fn(this.dbStorage), timeoutPromise]) as T;
-    } catch (e) {
+      const result = await Promise.race([fn(this.dbStorage), timeoutPromise]) as T;
+      clearTimeout(timeoutId!);
+      return result;
+    } catch (e: any) {
+      clearTimeout(timeoutId!);
       console.error(`ResilientStorage: DB error occurred, falling back to memory storage. Error: ${e.message}`);
-      this.useMemory = true;
+      // Do not permanently disable DB in serverless mode, just fallback for this request
       return fn(this.memoryStorage);
     }
   }
