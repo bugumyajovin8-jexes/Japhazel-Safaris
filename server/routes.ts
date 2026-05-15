@@ -63,7 +63,7 @@ export async function registerRoutes(
       return res.json(allTours);
     } catch (error) {
       console.error("Get tours error:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: String(error) });
     }
   });
 
@@ -214,7 +214,7 @@ export async function registerRoutes(
       return res.json(items);
     } catch (error) {
       console.error("Get gallery items error:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: String(error) });
     }
   });
 
@@ -330,7 +330,7 @@ export async function registerRoutes(
       return res.json(settingsMap);
     } catch (error) {
       console.error("Get settings error:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: String(error) });
     }
   });
 
